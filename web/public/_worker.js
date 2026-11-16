@@ -10,7 +10,11 @@ export default {
         proxyReq.headers.set('X-Forwarded-For', clientIp);
         proxyReq.headers.set('X-Real-IP', clientIp);
       }
-      const resp = await fetch(proxyReq);
+      // Talk to the origin directly (resolveOverride keeps SNI/hostname as api.tokenni.com).
+      // Going through the CF edge for api.tokenni.com would overwrite X-Forwarded-For with
+      // the Worker egress IP. The Worker egresses from Cloudflare IPs, so it passes the
+      // origin firewall that only allows Cloudflare ranges on 443.
+      const resp = await fetch(proxyReq, { cf: { resolveOverride: '161.153.54.238' } });
       const headers = new Headers(resp.headers);
       headers.delete('x-new-api-version');
       headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
