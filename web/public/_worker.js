@@ -29,7 +29,8 @@ export default {
     headers.set('X-Frame-Options', 'SAMEORIGIN');
     headers.set('X-Content-Type-Options', 'nosniff');
     headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    headers.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.tokenni.com https://tokenni.com wss://api.tokenni.com; media-src 'self' data: https:; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'");
+    // CSP allows Turnstile (challenges.cloudflare.com): script + challenge iframe + API calls.
+    headers.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.tokenni.com https://tokenni.com wss://api.tokenni.com https://challenges.cloudflare.com; frame-src 'self' https://challenges.cloudflare.com; media-src 'self' data: https:; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'");
     return new Response(resp.body, { status: resp.status, statusText: resp.statusText, headers });
   }
 };
