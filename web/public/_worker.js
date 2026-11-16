@@ -3,8 +3,11 @@ export default {
     const url = new URL(request.url);
     if (url.pathname.startsWith('/api') || url.pathname.startsWith('/v1') || url.pathname.startsWith('/pg')) {
       url.hostname = 'api.tokenni.com';
-      // forward the real visitor IP so new-api logs/audits see the client, not the Pages edge
-      const clientIp = request.headers.get('CF-Connecting-IP');
+      // forward the real visitor IP so new-api logs/audits see the client, not the Pages edge.
+      // CF-Connecting-IP is not always present on the request the Worker sees, so fall back
+      // to the incoming X-Forwarded-For, which the edge already set to the real client IP.
+      const forwarded = request.headers.get('X-Forwarded-For') || '';
+      const clientIp = request.headers.get('CF-Connecting-IP') || forwarded.split(',')[0].trim();
       const proxyReq = new Request(url.toString(), request);
       if (clientIp) {
         proxyReq.headers.set('X-Forwarded-For', clientIp);
