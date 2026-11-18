@@ -25,22 +25,17 @@ import {
   useState,
 } from 'react'
 
-import {
-  readThemePreference,
-  THEME_STORAGE_KEYS,
-  writeThemePreference,
-} from '@/lib/theme-storage'
-
+// Tokenni customization: the site is dark-only. There is no light / system
+// theme choice anywhere in the UI, so this provider always resolves to dark,
+// ignoring any previously stored theme preference or OS setting.
 type Theme = 'dark' | 'light' | 'system'
 type ResolvedTheme = Exclude<Theme, 'system'>
 
-const DEFAULT_THEME = 'system'
-const THEMES = new Set<Theme>(['dark', 'light', 'system'])
+const DEFAULT_THEME: Theme = 'dark'
 
 type ThemeProviderProps = {
   children: React.ReactNode
   defaultTheme?: Theme
-  storageKey?: string
 }
 
 type ThemeProviderState = {
@@ -53,7 +48,7 @@ type ThemeProviderState = {
 
 const initialState: ThemeProviderState = {
   defaultTheme: DEFAULT_THEME,
-  resolvedTheme: 'light',
+  resolvedTheme: 'dark',
   theme: DEFAULT_THEME,
   setTheme: () => null,
   resetTheme: () => null,
@@ -61,60 +56,28 @@ const initialState: ThemeProviderState = {
 
 const ThemeContext = createContext<ThemeProviderState>(initialState)
 
-function getSystemTheme(): ResolvedTheme {
-  if (typeof window === 'undefined') return 'light'
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light'
-}
-
-function resolveTheme(theme: Theme): ResolvedTheme {
-  return theme === 'system' ? getSystemTheme() : theme
-}
-
 export function ThemeProvider({
   children,
   defaultTheme = DEFAULT_THEME,
-  storageKey = THEME_STORAGE_KEYS.mode,
   ...props
 }: ThemeProviderProps) {
-  const [theme, _setTheme] = useState<Theme>(() =>
-    readThemePreference(storageKey, THEMES, defaultTheme)
-  )
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
-    resolveTheme(theme)
-  )
+  const [theme] = useState<Theme>('dark')
+  const [resolvedTheme] = useState<ResolvedTheme>('dark')
 
   useEffect(() => {
     const root = window.document.documentElement
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    root.classList.remove('light', 'dark')
+    root.classList.add('dark')
+  }, [])
 
-    const applyTheme = () => {
-      const nextResolvedTheme = theme === 'system' ? getSystemTheme() : theme
-      root.classList.remove('light', 'dark')
-      root.classList.add(nextResolvedTheme)
-      setResolvedTheme(nextResolvedTheme)
-    }
-
-    applyTheme()
-
-    mediaQuery.addEventListener('change', applyTheme)
-
-    return () => mediaQuery.removeEventListener('change', applyTheme)
-  }, [theme])
-
-  const setTheme = useCallback(
-    (theme: Theme) => {
-      writeThemePreference(storageKey, theme)
-      _setTheme(theme)
-    },
-    [storageKey]
-  )
+  // Kept for API compatibility with existing callers; theme is locked to dark.
+  const setTheme = useCallback((_theme: Theme) => {
+    // No-op: Tokenni is dark-only.
+  }, [])
 
   const resetTheme = useCallback(() => {
-    writeThemePreference(storageKey, null)
-    _setTheme(defaultTheme)
-  }, [defaultTheme, storageKey])
+    // No-op: Tokenni is dark-only.
+  }, [])
 
   const contextValue = useMemo(
     () => ({

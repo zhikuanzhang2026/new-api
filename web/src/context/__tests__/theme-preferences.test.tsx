@@ -123,8 +123,9 @@ describe('theme preference persistence', () => {
 
     render(<ThemeFixture />)
 
-    expect(screen.getByLabelText('Theme mode')).toHaveTextContent('system')
-    expect(document.documentElement).toHaveClass('light')
+    // Tokenni is dark-only: mode is always dark, never system/light.
+    expect(screen.getByLabelText('Theme mode')).toHaveTextContent('dark')
+    expect(document.documentElement).toHaveClass('dark')
     expect(document.body).not.toHaveAttribute('data-theme-preset')
     expect(document.body).toHaveAttribute('data-theme-font', 'system')
     expect(document.body).not.toHaveAttribute('data-theme-radius')
@@ -151,6 +152,8 @@ describe('theme preference persistence', () => {
       'centered'
     )
     for (const [key, value] of Object.entries(savedPreferences)) {
+      // Tokenni is dark-only: the mode is never written to storage anymore.
+      if (key === 'newapi:theme:v1:mode') continue
       expect(localStorage.getItem(key)).toBe(value)
     }
     expect(document.cookie).toBe('')
@@ -169,14 +172,16 @@ describe('theme preference persistence', () => {
     first.unmount()
     render(<ThemeFixture />)
 
-    expect(screen.getByLabelText('Theme mode')).toHaveTextContent('system')
-    expect(document.documentElement).toHaveClass('light')
+    expect(screen.getByLabelText('Theme mode')).toHaveTextContent('dark')
+    expect(document.documentElement).toHaveClass('dark')
     expect(document.body).not.toHaveAttribute('data-theme-preset')
     expect(document.body).toHaveAttribute('data-theme-font', 'system')
     expect(document.body).not.toHaveAttribute('data-theme-radius')
     expect(document.body).not.toHaveAttribute('data-theme-scale')
     expect(document.body).toHaveAttribute('data-theme-content-layout', 'full')
     for (const key of Object.keys(savedPreferences)) {
+      // Tokenni is dark-only: the mode key is never written or removed.
+      if (key === 'newapi:theme:v1:mode') continue
       expect(localStorage.getItem(key)).toBeNull()
     }
     expect(localStorage.getItem('unrelated-preference')).toBe('keep')
@@ -192,7 +197,8 @@ describe('theme preference persistence', () => {
 
       render(<ThemeFixture />)
 
-      expect(screen.getByLabelText('Theme mode')).toHaveTextContent('system')
+      // Tokenni is dark-only: mode is always dark regardless of stored value.
+      expect(screen.getByLabelText('Theme mode')).toHaveTextContent('dark')
       expect(document.body).not.toHaveAttribute('data-theme-preset')
       expect(document.body).toHaveAttribute('data-theme-font', 'system')
       expect(document.body).not.toHaveAttribute('data-theme-radius')
@@ -208,7 +214,7 @@ describe('theme preference persistence', () => {
 
     render(<ThemeFixture />)
 
-    expect(screen.getByLabelText('Theme mode')).toHaveTextContent('system')
+    expect(screen.getByLabelText('Theme mode')).toHaveTextContent('dark')
     expect(document.body).not.toHaveAttribute('data-theme-preset')
   })
 
@@ -229,7 +235,7 @@ describe('theme preference persistence', () => {
 
     await user.click(screen.getByRole('button', { name: 'Reset' }))
 
-    expect(screen.getByLabelText('Theme mode')).toHaveTextContent('system')
+    expect(screen.getByLabelText('Theme mode')).toHaveTextContent('dark')
     expect(document.body).not.toHaveAttribute('data-theme-preset')
   })
 
