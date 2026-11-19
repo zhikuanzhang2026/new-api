@@ -27,6 +27,7 @@ import { isLikelyHtml } from '@/lib/content-format'
 import { useAuthStore } from '@/stores/auth-store'
 
 import { CTA, Features, Hero, HowItWorks, Stats } from './components'
+import { ThreeBackground } from './components/three-background'
 import { useHomePageContent } from './hooks'
 
 export function Home() {
@@ -97,6 +98,7 @@ export function Home() {
     if (contentIsHtml) {
       return (
         <PublicLayout showMainContainer={false}>
+          <ThreeBackground />
           <RichContent
             mode='html'
             htmlVariant='isolated'
