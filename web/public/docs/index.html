@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API 文档 · Tokenni</title>
+<style>
+  :root { --bg:#0a0a0c; --surface:#121214; --line:#26262a; --text:#f4f4f5; --muted:#a1a1aa; --accent:#2997ff; --purple:#bf5af2; --red:#ff375f; --green:#30d158; --code-bg:#1a1a1e; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; line-height:1.75; }
+  .wrap { max-width:860px; margin:0 auto; padding:48px 24px 80px; }
+  h1 { font-size:32px; line-height:1.3; margin-bottom:8px; }
+  h1 .grad { background:linear-gradient(90deg,#2997ff,#bf5af2,#ff375f); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .subtitle { color:var(--muted); font-size:16px; margin-bottom:32px; }
+  h2 { font-size:22px; margin:40px 0 12px; padding-top:24px; border-top:1px solid var(--line); }
+  h3 { font-size:17px; margin:28px 0 10px; }
+  p { margin:10px 0; color:#d4d4d8; }
+  p strong, li strong { color:var(--text); }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+  code { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:0.88em; background:var(--code-bg); border:1px solid var(--line); border-radius:6px; padding:1px 6px; color:#e4e4e7; }
+  pre { background:var(--code-bg); border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:12px 0; }
+  pre code { background:none; border:none; padding:0; font-size:13px; line-height:1.7; display:block; white-space:pre; }
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:14px; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; font-size:13px; }
+  td { color:#d4d4d8; }
+  ul, ol { margin:10px 0 10px 22px; color:#d4d4d8; }
+  li { margin:5px 0; }
+  .note { background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:10px; padding:14px 16px; margin:16px 0; font-size:14px; color:#d4d4d8; }
+  .note.warn { border-left-color:#ffd60a; }
+  .badge { display:inline-block; font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid var(--line); color:var(--muted); margin-left:8px; vertical-align:middle; }
+  .toc { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px 22px; margin:24px 0; }
+  .toc a { display:block; padding:4px 0; color:#d4d4d8; font-size:14px; }
+  .toc a:hover { color:var(--accent); }
+  footer { margin-top:56px; padding-top:24px; border-top:1px solid var(--line); color:var(--muted); font-size:14px; }
+  @media (max-width:640px){ .wrap{padding:32px 16px 64px;} h1{font-size:26px;} table{font-size:13px;} th,td{padding:8px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>API 文档 · <span class="grad">Tokenni</span></h1>
+<p class="subtitle">一个 Key，接通 GPT、Claude、Grok、Seedance 与生图模型。统一 OpenAI 兼容接口，换模型不用换地址。</p>
+
+<div class="toc">
+  <a href="#api">统一接口</a>
+  <a href="#auth">认证与账户安全</a>
+  <a href="#quickstart">快速开始</a>
+  <a href="#models">模型与价格</a>
+  <a href="#chat">对话：调用</a>
+  <a href="#video">视频：提交、查询、下载</a>
+  <a href="#image">图片：生成与编辑</a>
+  <a href="#billing">计费、退款与重试</a>
+  <a href="#errors">常见错误</a>
+  <a href="#faq">常见问题</a>
+  <a href="#contact">联系方式</a>
+</div>
+
+<h2 id="api">统一接口</h2>
+<p>基础地址：<code>https://api.tokenni.com</code>。所有模型均通过以下 OpenAI 兼容接口调用；更换同类型模型时，不需要更换接口路径。</p>
+<table>
+  <tr><th>用途</th><th>方法</th><th>路径</th></tr>
+  <tr><td>获取可用模型</td><td>GET</td><td><code>/v1/models</code></td></tr>
+  <tr><td>对话补全</td><td>POST</td><td><code>/v1/chat/completions</code></td></tr>
+  <tr><td>生成视频</td><td>POST</td><td><code>/v1/videos</code></td></tr>
+  <tr><td>查询视频任务</td><td>GET</td><td><code>/v1/videos/{id}</code></td></tr>
+  <tr><td>下载视频</td><td>GET</td><td><code>/v1/videos/{id}/content</code></td></tr>
+  <tr><td>生成图片</td><td>POST</td><td><code>/v1/images/generations</code></td></tr>
+  <tr><td>参考图编辑 / 图生图</td><td>POST</td><td><code>/v1/images/edits</code></td></tr>
+</table>
+<div class="note"><strong>统一的是接口，不是所有型号的能力。</strong>对话按 token 计费，视频按秒计费，图片按张计费；时长、分辨率、比例与参考素材数量仍按所选模型执行。视频是异步任务（先返回任务 ID，再轮询查询）；图片通常等待完成后直接返回 <code>data[].url</code>，不要用视频的轮询方式查图片。</div>
+
+<h2 id="auth">认证与账户安全</h2>
+<p>本站 API 调用携带请求头 <code>Authorization: Bearer sk-你的密钥</code>。密钥在 <a href="https://tokenni.com/console/token">控制台 · 令牌</a> 创建。请只在自己的服务端保存密钥，不要写进网页、App 或公开代码仓库。</p>
+<p>创建密钥时要选对<strong>分组</strong>：对话模型用 <code>default</code> / <code>grok</code> / <code>claude</code> 分组，视频用 <code>see dance</code> 分组，生图用 <code>image</code> 分组。分组不对会报 503 “没有可用渠道”，不是模型不存在。</p>
+<p>新用户注册送 ¥0.5，每天签到再送 ¥0.05。余额不足时会报 401 / 403，先检查余额与密钥额度。</p>
+
+<h2 id="quickstart">快速开始</h2>
+<p>下面是一个对话示例。把示例密钥换成自己的本站密钥。</p>
+<pre><code>curl -X POST "https://api.tokenni.com/v1/chat/completions" \
+  -H "Authorization: Bearer sk-你的密钥" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-6.2-sol",
+    "messages": [
+      {"role": "user", "content": "你好，介绍一下你自己"}
+    ]
+  }'</code></pre>
+<p>生成图片示例：</p>
+<pre><code>curl -X POST "https://api.tokenni.com/v1/images/generations" \
+  -H "Authorization: Bearer sk-你的密钥" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-image-2.6-flare","prompt":"雨夜便利店，暖黄灯光，电影感写实","size":"1024x1024","n":1}'</code></pre>
+<p>生成视频示例（异步，保存返回的 <code>id</code> 再查询）：</p>
+<pre><code>curl -X POST "https://api.tokenni.com/v1/videos" \
+  -H "Authorization: Bearer sk-你的密钥" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.5",
+    "prompt": "雨夜便利店，暖黄灯光映在湿润街道上，固定镜头，电影感写实",
+    "seconds": "5",
+    "resolution": "720p"
+  }'</code></pre>
+
+<h2 id="models">模型与价格</h2>
+<p>价格以 <a href="https://tokenni.com/pricing">定价页</a> 与实际账单为准。定价页有“标准 / 充值”两种显示：标准价是调用时从账户余额扣除的额度；充值价是实际支付的人民币。本站按 1 美元额度 = ¥7.3 结算，充值价 = 标准价 × 7.3。</p>
+
+<h3>对话模型 <span class="badge">按 token 计费</span></h3>
+<p>价格为每 100 万 token（输入 / 输出）。</p>
+<table>
+  <tr><th>模型</th><th>输入 / 1M</th><th>输出 / 1M</th><th>适合</th></tr>
+  <tr><td><code>gpt-6.2-astra</code></td><td>¥4</td><td>¥20</td><td>最强，复杂任务</td></tr>
+  <tr><td><code>gpt-6-astra</code></td><td>¥3</td><td>¥15</td><td>复杂任务</td></tr>
+  <tr><td><code>gpt-6.2-sol</code></td><td>¥1</td><td>¥5</td><td>日常首选</td></tr>
+  <tr><td><code>gpt-6.1-sol</code></td><td>¥0.6</td><td>¥3</td><td>日常使用</td></tr>
+  <tr><td><code>gpt-6.1-terra</code></td><td>¥0.54</td><td>¥2.7</td><td>轻量任务</td></tr>
+  <tr><td><code>gpt-6-luna</code></td><td>¥0.35</td><td>¥1.75</td><td>最便宜</td></tr>
+  <tr><td><code>claude-opus-5-5</code></td><td>¥2.08</td><td>¥10.4</td><td>写代码顶配</td></tr>
+  <tr><td><code>claude-sonnet-5-5</code></td><td>¥1.04</td><td>¥5.2</td><td>写代码很顺手</td></tr>
+  <tr><td><code>claude-haiku-5-5</code></td><td>¥0.078</td><td>¥0.39</td><td>便宜又快</td></tr>
+  <tr><td><code>grok-4.7</code></td><td>¥2</td><td>¥6</td><td>回答特别详细</td></tr>
+  <tr><td><code>grok-4.6</code></td><td>¥0.6</td><td>¥1.8</td><td>4.7 的三成价，日常首选</td></tr>
+</table>
+<div class="note">Claude 的 haiku 与 sonnet 不支持非默认 temperature：调用时请把 <code>temperature</code> 设为 1（或不传），否则上游会报 400。opus 与 GPT、Grok 可用 0.7。</div>
+
+<h3>视频模型 <span class="badge">按秒计费</span></h3>
+<table>
+  <tr><th>模型</th><th>时长</th><th>分辨率</th><th>本站价格</th></tr>
+  <tr><td><code>seedance-2.0-mini</code></td><td>5–15 秒</td><td>720p</td><td>¥0.2028 / 秒</td></tr>
+  <tr><td><code>seedance-2.0-fast</code></td><td>3–15 秒</td><td>720p</td><td>¥0.2704 / 秒</td></tr>
+  <tr><td><code>seedance-2.5</code></td><td>4–30 秒</td><td>480p / 720p</td><td>480p ¥0.429 / 秒，720p ¥0.598 / 秒</td></tr>
+</table>
+<p>Seedance 2.5 做 5 秒 720p 只要 ¥2.99。视频是异步任务，提交后轮询 <code>GET /v1/videos/{id}</code>，成功后用 <code>/content</code> 下载。</p>
+
+<h3>图片模型 <span class="badge">按张计费</span></h3>
+<table>
+  <tr><th>模型</th><th>规格</th><th>本站价格</th></tr>
+  <tr><td><code>nano-banana-2.1</code> / <code>-2k</code> / <code>-4k</code></td><td>1K / 2K / 4K</td><td>¥0.117 / 张</td></tr>
+  <tr><td><code>nano-banana-pro</code> / <code>-2k</code> / <code>-4k</code></td><td>1K / 2K / 4K</td><td>¥0.13 / 张</td></tr>
+  <tr><td><code>gpt-image-2.6-flare</code></td><td>1K</td><td>¥0.039 / 张</td></tr>
+  <tr><td><code>gpt-image-2.6-flare-2k</code></td><td>2K</td><td>¥0.078 / 张</td></tr>
+  <tr><td><code>gpt-image-2.6-flare-4k</code></td><td>4K</td><td>¥0.104 / 张</td></tr>
+  <tr><td><code>gpt-image-2.6-sunburst</code></td><td>1K</td><td>¥0.0494 / 张</td></tr>
+  <tr><td><code>gpt-image-2.6-sunburst-2k</code></td><td>2K</td><td>¥0.078 / 张</td></tr>
+  <tr><td><code>gpt-image-2.6-sunburst-4k</code></td><td>4K</td><td>¥0.104 / 张</td></tr>
+</table>
+<p>2K / 4K 型号调用时传 <code>size</code> 参数（如 <code>2560x1440</code> / <code>3840x2160</code>），不传默认按小尺寸出图。最便宜的是 flare，¥0.039 一张。</p>
+
+<h2 id="chat">对话：调用</h2>
+<p><code>POST /v1/chat/completions</code>，OpenAI 兼容格式。支持流式（<code>stream: true</code>）与非流式。</p>
+<pre><code>{
+  "model": "gpt-6.2-sol",
+  "messages": [
+    {"role": "system", "content": "你是一个有帮助的助手。"},
+    {"role": "user", "content": "写一首关于雨天的短诗"}
+  ],
+  "temperature": 0.7,
+  "stream": false
+}</code></pre>
+<p>常用字段：<code>model</code>（完整模型 ID）、<code>messages</code>（对话历史）、<code>temperature</code>、<code>max_tokens</code>、<code>stream</code>。返回的 <code>usage</code> 里有本次消耗的 token 数，账单以实际 <code>usage</code> 为准。</p>
+<div class="note">Grok 的 prompt token 大部分会被缓存，实际扣费常比原始 prompt 长度低；Claude haiku / sonnet 请用 <code>temperature: 1</code>。</div>
+
+<h2 id="video">视频：提交、查询、下载</h2>
+<h3>提交参数</h3>
+<p><code>POST /v1/videos</code>，JSON。</p>
+<table>
+  <tr><th>字段</th><th>说明</th></tr>
+  <tr><td><code>model</code></td><td>视频模型的完整 ID，如 <code>seedance-2.5</code>。</td></tr>
+  <tr><td><code>prompt</code></td><td>提示词；比例与分辨率应与所选参数一致。</td></tr>
+  <tr><td><code>seconds</code></td><td>视频秒数，建议传字符串，如 <code>"5"</code>；必须用该型号支持的时长。</td></tr>
+  <tr><td><code>resolution</code></td><td>清晰度，如 <code>720p</code> / <code>480p</code>；固定清晰度的型号不要传其他档位。</td></tr>
+  <tr><td><code>aspect_ratio</code></td><td>画面比例，如 <code>16:9</code>；建议显式传。</td></tr>
+</table>
+<h3>查询任务与统一状态</h3>
+<p><code>GET /v1/videos/{id}</code>，使用提交时返回的本站任务 ID。</p>
+<table>
+  <tr><th>status</th><th>含义</th><th>处理</th></tr>
+  <tr><td><code>queued</code></td><td>排队中</td><td>继续查询</td></tr>
+  <tr><td><code>in_progress</code></td><td>生成中</td><td>继续查询</td></tr>
+  <tr><td><code>completed</code></td><td>成功</td><td>下载视频</td></tr>
+  <tr><td><code>failed</code></td><td>失败</td><td>读取 error，失败自动退款</td></tr>
+</table>
+<p>建议至少间隔 30 秒查询一次。视频成功状态统一是 <code>completed</code>，不是 success 或 succeeded。</p>
+<h3>下载视频</h3>
+<p><code>GET /v1/videos/{id}/content</code>，成功后下载，支持 Range。</p>
+<pre><code>curl -L -o result.mp4 "https://api.tokenni.com/v1/videos/task_xxxxxxxxxxxxxxxx/content" \
+  -H "Authorization: Bearer sk-你的密钥"</code></pre>
+<p>下载用同一个本站密钥和原任务 ID，不创建新任务、不再次扣费。结果有时效，请尽快下载到自己的存储。</p>
+
+<h2 id="image">图片：生成与编辑</h2>
+<p><code>POST /v1/images/generations</code> 生成图片。</p>
+<pre><code>curl -X POST "https://api.tokenni.com/v1/images/generations" \
+  -H "Authorization: Bearer sk-你的密钥" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"nano-banana-2.1","prompt":"雨夜便利店，暖黄灯光，电影感写实","size":"1024x1024","n":1}'</code></pre>
+<p>图片接口通常等待生成完成，成功后返回 <code>data[].url</code>。客户端应设置足够长的请求超时（建议 120 秒以上），收到结果后直接下载，不要用视频的轮询接口查图片。</p>
+<p>返回示例：</p>
+<pre><code>{"created": 1763640000, "data": [{"url": "https://api.tokenni.com/..."}]}</code></pre>
+<p><code>POST /v1/images/edits</code> 做参考图编辑 / 图生图，推荐用 multipart，字段与生成接口相同，另传 <code>image</code>（参考图文件）。通用建议：<code>n=1</code>；<code>size</code>、<code>aspect_ratio</code> 按模型说明填写。</p>
+
+<h2 id="billing">计费、退款与重试</h2>
+<p>生成任务按所选模型的 token 数、秒数或张数收费；提交可能先预扣费用，任务完成后以使用日志的实际记录为准。失败的任务自动退款，不用手动申请。</p>
+<p><strong>提交超时或网络中断时不要自动重试 POST。</strong>这不代表任务没有创建。先查任务日志，收到 ID 后只查原任务；查询或下载超时也不要重新生成，避免重复扣费。</p>
+
+<h2 id="errors">常见错误</h2>
+<table>
+  <tr><th>情况</th><th>检查方式</th></tr>
+  <tr><td>模型不存在 / 已停用</td><td>确认完整 model ID、密钥分组与模型权限。</td></tr>
+  <tr><td>503 “没有可用渠道”</td><td>多半是密钥分组不对：对话用 default / grok / claude，视频用 see dance，生图用 image。换对应分组的密钥再试。</td></tr>
+  <tr><td>比例或分辨率冲突</td><td>提示词若写了 9:16，参数也应传 aspect_ratio=9:16；固定 720p 的型号不要传 1080p。</td></tr>
+  <tr><td>401 / 403</td><td>检查 Bearer 密钥、余额、令牌额度及模型权限。</td></tr>
+  <tr><td>400 temperature 报错（Claude）</td><td>haiku / sonnet 请把 temperature 设为 1。</td></tr>
+  <tr><td>429</td><td>降低并发和轮询频率。</td></tr>
+  <tr><td>5xx / 提交超时</td><td>先核实是否已创建任务，再决定下一步，避免重复扣费。</td></tr>
+  <tr><td>任务 / 下载不存在</td><td>使用同一次提交返回的本站任务 ID；确认账号与任务类型。</td></tr>
+</table>
+
+<h2 id="faq">常见问题</h2>
+<p><strong>换一个模型要换接口吗？</strong><br>不需要。同一类模型共用一个接口路径，换 <code>model</code> 字段就行；但要按新模型改时长、清晰度、比例等参数，并确认密钥分组对得上。</p>
+<p><strong>图片也用视频的查询接口吗？</strong><br>不使用。图片接口通常直接返回 <code>data[].url</code>，按返回地址下载即可。</p>
+<p><strong>标准价和充值价有什么区别？</strong><br>标准价是调用时从账户余额扣除的额度；充值价是实际支付的人民币。本站按 1 美元额度 = ¥7.3 结算，充值价 = 标准价 × 7.3。</p>
+<p><strong>注册有赠送吗？</strong><br>有。注册送 ¥0.5，每天签到再送 ¥0.05，签到在个人中心完成。</p>
+<p><strong>失败会扣费吗？</strong><br>不会。生成失败自动退款，以使用日志的实际记录为准。</p>
+
+<h2 id="contact">联系方式</h2>
+<p>技术支持、充值与账单、大批量调用与定制需求，欢迎加 QQ 联系：<strong>515759529</strong>。排查时请提供任务 ID 或 request_id，不要发送完整 API 密钥。</p>
+
+<footer>
+  <p>Tokenni · 一个 Key，所有模型。价格以定价页与实际账单为准。</p>
+</footer>
+
+</div>
+</body>
+</html>
