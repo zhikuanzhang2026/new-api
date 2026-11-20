@@ -6225,6 +6225,7 @@
     "stale": "expiré",
     "Standard": "Standard",
     "Standard price": "Prix standard",
+    "Standard price is the quota deducted from your balance; Recharge price is the actual CNY you pay. This site settles at ¥7.3 per $1 of quota credit, so the Recharge price is 7.3× the Standard price.": "Standard price is the quota deducted from your balance; Recharge price is the actual CNY you pay. This site settles at ¥7.3 per $1 of quota credit, so the Recharge price is 7.3× the Standard price.",
     "Standard protocol interfaces": "Interfaces des protocoles standard",
     "Start": "Début",
     "Start ≤ end: within the day; start > end: across midnight": "Début ≤ fin : plage dans la journée ; début > fin : plage après minuit",

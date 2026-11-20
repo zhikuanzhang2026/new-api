@@ -256,6 +256,12 @@ export function Pricing() {
                 onClearFilters={clearFilters}
               />
 
+              <p className='text-xs leading-relaxed text-muted-foreground'>
+                {t(
+                  'Standard price is the quota deducted from your balance; Recharge price is the actual CNY you pay. This site settles at ¥7.3 per $1 of quota credit, so the Recharge price is 7.3× the Standard price.'
+                )}
+              </p>
+
               {renderPricingContent()}
             </main>
           </div>
