@@ -6225,7 +6225,6 @@
     "stale": "失联",
     "Standard": "标准",
     "Standard price": "标准价格",
-    "Standard price is the quota deducted from your balance; Recharge price is the actual CNY you pay. This site settles at ¥7.3 per $1 of quota credit, so the Recharge price is 7.3× the Standard price.": "标准价是扣余额的价格，充值价是实际花的人民币。本站按 1 美元额度 = ¥7.3 结算，充值价 = 标准价 × 7.3。",
     "Standard protocol interfaces": "标准协议接口",
     "Start": "开始",
     "Start ≤ end: within the day; start > end: across midnight": "开始 ≤ 结束为当日区间，开始 > 结束为跨零点区间",
